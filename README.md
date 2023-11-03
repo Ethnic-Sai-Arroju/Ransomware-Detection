@@ -1,1 +1,1 @@
-# Malware-Detection
+# Ransomware-Detection
