@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ransomware Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --primary-dark: #5649c0;
+      --secondary: #a29bfe;
+      --danger: #ff7675;
+      --success: #00b894;
+      --warning: #fdcb6e;
+      --light: #f8f9fa;
+      --dark: #343a40;
+      --gray: #6c757d;
+      --border-radius: 12px;
+      --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      color: var(--dark);
+      background-color: #f5f7ff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--gray);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .card-title svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .file-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border: 2px dashed var(--secondary);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      background-color: rgba(162, 155, 254, 0.1);
+    }
+
+    .file-input-button:hover {
+      background-color: rgba(162, 155, 254, 0.2);
+    }
+
+    .file-input-button svg {
+      width: 32px;
+      height: 32px;
+      color: var(--primary);
+    }
+
+    .file-input-button span {
+      font-weight: 500;
+      color: var(--primary);
+    }
+
+    .file-input-wrapper input[type="file"] {
+      font-size: 100px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+      height: 100%;
+      width: 100%;
+    }
+
+    .file-details {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: rgba(162, 155, 254, 0.1);
+      border-radius: var(--border-radius);
+    }
+
+    .file-details.active {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .file-size {
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: var(--border-radius);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-block {
+      display: flex;
+      width: 100%;
+    }
+
+    .result-container {
+      display: none;
+    }
+
+    .result-container.active {
+      display: block;
+    }
+
+    .result-content {
+      padding: 1.5rem;
+      border-radius: calc(var(--border-radius) - 4px);
+      margin-top: 1rem;
+    }
+
+    .result-malicious {
+      background-color: rgba(255, 118, 117, 0.1);
+      border-left: 4px solid var(--danger);
+    }
+
+    .result-clean {
+      background-color: rgba(0, 184, 148, 0.1);
+      border-left: 4px solid var(--success);
+    }
+
+    .result-warning {
+      background-color: rgba(253, 203, 110, 0.1);
+      border-left: 4px solid var(--warning);
+    }
+
+    .result-neutral {
+      background-color: rgba(108, 117, 125, 0.1);
+      border-left: 4px solid var(--gray);
+    }
+
+    .result-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .result-title svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .result-text {
+      font-size: 0.95rem;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .alert-error {
+      background-color: rgba(255, 118, 117, 0.2);
+      border-left: 4px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .alert-success {
+      background-color: rgba(0, 184, 148, 0.2);
+      border-left: 4px solid var(--success);
+      color: var(--success);
+    }
+
+    .alert svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: auto;
+      padding: 2rem;
+      color: var(--gray);
+      font-size: 0.9rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Ransomware Detection</h1>
+      <p class="subtitle">Upload suspicious files to scan for potential ransomware threats using our advanced detection system.</p>
+    </header>
+
+    <main>
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {% if category == 'error' %}
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                {% else %}
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                {% endif %}
+              </svg>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="card">
+        <h2 class="card-title">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          File Upload
+        </h2>
+        
+        <div class="file-upload">
+          <form method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="file-input-wrapper">
+              <div class="file-input-button" id="fileInputButton">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span>Click to upload file</span>
+                <input type="file" name="file" id="fileInput" accept=".exe,.dll,.zip" required>
+              </div>
+            </div>
+            
+            <div class="file-details" id="fileDetails">
+              <div class="file-name" id="fileName"></div>
+              <div class="file-size" id="fileSize"></div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block" id="submitButton">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Scan for Ransomware
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {% if result %}
+      <div class="card result-container active" id="resultContainer">
+        <h2 class="card-title">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Scan Results
+        </h2>
+        
+        <div class="result-content {% if 'Ransomware detected' in result %}result-malicious{% elif 'File appears to be legitimate' in result %}result-clean{% else %}result-warning{% endif %}" id="resultContent">
+          <div class="result-title">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {% if 'Ransomware detected' in result %}
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              {% elif 'File appears to be legitimate' in result %}
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              {% else %}
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              {% endif %}
+            </svg>
+            <span>
+              {% if 'Ransomware detected' in result %}
+              Ransomware Detected!
+              {% elif 'File appears to be legitimate' in result %}
+              No Threats Detected
+              {% else %}
+              Suspicious Activity Detected
+              {% endif %}
+            </span>
+          </div>
+          <div class="result-text">{{ result }}</div>
+        </div>
+      </div>
+      {% endif %}
+    </main>
+  </div>
+
+  <footer>
+    <p>© 2023 Ransomware Detection System. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const fileInput = document.getElementById('fileInput');
+      const fileInputButton = document.getElementById('fileInputButton');
+      const fileDetails = document.getElementById('fileDetails');
+      const fileName = document.getElementById('fileName');
+      const fileSize = document.getElementById('fileSize');
+      const submitButton = document.getElementById('submitButton');
+      const uploadForm = document.getElementById('uploadForm');
+      
+      // Handle file selection
+      fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files.length > 0) {
+          const file = this.files[0];
+          fileName.textContent = file.name;
+          fileSize.textContent = formatFileSize(file.size);
+          fileDetails.classList.add('active');
+          
+          // Update button text
+          fileInputButton.querySelector('span').textContent = 'Change file';
+        }
+      });
+      
+      // Format file size
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+      
+      // Form submission
+      uploadForm.addEventListener('submit', function(e) {
+        // Show loading state
+        const originalButtonText = submitButton.innerHTML;
+        submitButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20" class="animate-spin">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Scanning...
+        `;
+        submitButton.disabled = true;
+      });
+    });
+  </script>
+</body>
+</html>
